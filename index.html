@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sentiment Analysis</title>
+</head>
+<body>
+    <h1>Sentiment Analysis</h1>
+    
+    <form action="/analyze" method="POST">
+        <textarea name="input_text" rows="4" cols="50"></textarea><br>
+        <input type="submit" value="Analyze">
+    </form>
+
+    <h2>Analysis Result:</h2>
+    <div id="result">
+    </div>
+
+    <h2>Detailed Result:</h2>
+    <div id="result1">
+    </div>
+    
+    <script>
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inputText = e.target.querySelector('textarea').value;
+    
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                body: new URLSearchParams({ input_text: inputText }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+    
+            const results = await response.json();
+            const resultDiv = document.getElementById('result');
+            const resultDiv1 = document.getElementById('result1');
+    
+            // Clear any previous results
+            resultDiv.innerHTML = '';
+    
+            for (let i = 0; i < results.length; i++) {
+                const sentence = results[i].sentence;
+                const sentiment = results[i].sentiment;
+                let sentenceHTML;
+                if (sentiment === 'positive') {
+                    sentenceHTML = `<p><span style="color: green">${sentence}</span></p>`;
+                } else if (sentiment === 'negative') {
+                    sentenceHTML = `<p><span style="color: red">${sentence}</span></p>`;
+                } else {
+                    sentenceHTML = `<p>${sentence}</p>`;
+                }
+                resultDiv.innerHTML += sentenceHTML;
+            }
+
+            resultDiv1.innerHTML = '';
+            for (let i = 0; i < results.length; i++) {
+                const sentenceDiv = document.createElement('div');
+                sentenceDiv.innerHTML = `
+                    <p><strong>Sentence ${i + 1}:</strong></p>
+                    <p>${results[i].sentence}</p>
+                    <p>Sentiment: ${results[i].sentiment}</p>
+                    <p>Positive Percentage: ${results[i].positive_percentage}</p>
+                    <p>Negative Percentage: ${results[i].negative_percentage}</p>
+                `;
+                resultDiv1.appendChild(sentenceDiv);
+            }
+
+        });
+    </script>
+</body>
+</html>
